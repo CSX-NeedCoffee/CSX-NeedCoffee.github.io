@@ -1,16 +1,23 @@
-import { viteBundler } from '@vuepress/bundler-vite'
-import { defineUserConfig } from 'vuepress'
-import { plumeTheme } from 'vuepress-theme-plume'
+import { viteBundler } from "@vuepress/bundler-vite";
+import { defineUserConfig } from "vuepress";
+import { plumeTheme } from "vuepress-theme-plume";
 
 export default defineUserConfig({
-  base: '/',
-  lang: 'zh-CN',
-  title: 'CSXplore',
-  description: 'ChenShouXiang Personal Site',
+  base: "/CSXplore.github.io/",
+  lang: "zh-CN",
+  title: "CSXplore",
+  description: "ChenShouXiang Personal Site",
 
   head: [
     // 配置站点图标
-    ['link', { rel: 'icon', type: 'image/png', href: 'https://theme-plume.vuejs.press/favicon-32x32.png' }],
+    [
+      "link",
+      {
+        rel: "icon",
+        type: "image/png",
+        href: "https://theme-plume.vuejs.press/favicon-32x32.png",
+      },
+    ],
   ],
 
   bundler: viteBundler(),
@@ -46,13 +53,13 @@ export default defineUserConfig({
     // },
 
     /* 博客文章页面链接前缀 */
-    article: '/article/',
+    article: "/article/",
 
     /**
      * 编译缓存，加快编译速度
      * @see https://theme-plume.vuejs.press/config/basic/#cache
      */
-    cache: 'filesystem',
+    cache: "filesystem",
 
     /**
      * 为 markdown 文件自动添加 frontmatter 配置
@@ -65,7 +72,7 @@ export default defineUserConfig({
     // },
 
     /* 本地搜索, 默认启用 */
-    search: { provider: 'local' },
+    search: { provider: "local" },
 
     /**
      * Algolia DocSearch
@@ -93,9 +100,9 @@ export default defineUserConfig({
     // readingTime: true,
 
     /**
-      * markdown
-      * @see https://theme-plume.vuejs.press/config/markdown/
-      */
+     * markdown
+     * @see https://theme-plume.vuejs.press/config/markdown/
+     */
     // markdown: {
     //   abbr: true,         // 启用 abbr 语法  *[label]: content
     //   annotation: true,   // 启用 annotation 语法  [+label]: content
@@ -169,4 +176,4 @@ export default defineUserConfig({
      */
     // encrypt: {},
   }),
-})
+});

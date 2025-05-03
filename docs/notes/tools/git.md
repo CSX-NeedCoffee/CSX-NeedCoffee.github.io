@@ -148,6 +148,12 @@ outline: "deep"
     git push origin master
     ```
   - 如果当前分支已经和远端分支关联，则可以省略分支名和远端名
+
     ```bash
     git push
     ```
+
+- 删除远程分支
+  ```bash
+  git push origin -d 分支名
+  ```

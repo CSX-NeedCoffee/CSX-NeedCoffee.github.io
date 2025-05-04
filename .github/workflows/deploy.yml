@@ -12,6 +12,10 @@ on:
 jobs:
   docs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # 允许写入代码
+      pages: write     # 允许操作 GitHub Pages
+      id-token: write  # 允许使用 GITHUB_TOKEN
 
     steps:
       - uses: actions/checkout@v4

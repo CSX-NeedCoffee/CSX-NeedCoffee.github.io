@@ -157,3 +157,61 @@ outline: "deep"
   ```bash
   git push origin -d 分支名
   ```
+
+### 4. [GitHub Actions](https://docs.github.com/zh/actions)
+
+#### 4.1. 简介
+
+GitHub Actions 是 GitHub 提供的**自动化工作流工具**，其内部提供了一个临时虚拟机，可通过编写 YAML 文件定义任务，由临时虚拟机执行，以实现代码构建、测试、部署等流程的自动化（CI/CD）。
+
+- **优势**：免费（公开仓库）、支持多系统（Linux/Windows/macOS）、海量社区插件（Actions）。
+
+#### 4.2. 使用步骤
+
+1. **创建工作流文件**：
+
+   - 在仓库中创建 `.github/workflows/` 目录
+   - 新建 YAML 文件（如 `ci.yml`）
+
+2. **基础工作流示例**：
+
+```yaml
+# 更多配置及其详解请查阅官方文档
+name: CI Pipeline
+on: [push, pull_request] # 触发条件
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4 # 拉取代码
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install && npm run build # 执行命令
+```
+
+### 5. [GitHub Pages](https://docs.github.com/zh/pages)
+
+#### 5.1. 简介
+
+GitHub Pages 是 GitHub 的**静态网站托管服务**，自动将指定分支（如 `gh-pages`）或目录中的 HTML/CSS/JS 文件发布为网站。
+
+- **特点**：免费、支持自定义域名、自带 HTTPS、适合博客/文档/项目主页；
+- **限制**：仅支持静态内容（无后端），构建需依赖 Jekyll 或外部工具（如 VuePress）。
+
+#### 5.2. 部署步骤
+
+##### 5.2.1. 分支部署
+
+- 原理：将构建产物部署到某个分支中（一般是 gh-pages 分支），供 GitHub Pages 托管。
+- 步骤：
+  1. 将构建后的资源上传到 gh-pages 分支中；
+     - 手动部署：自己将构建后的资源上传到 gh-pages 分支中；选择对应的部署目录；
+     - **_结合 actions 部署（推荐）：利用 actions 提供的虚拟机，通过在 `.github/workflows/deploy.yml` 中编写 CI 步骤：自动生成构建产物，并将其发布到 gh-pages 分支中_**；
+  2. 在 setting > pages 中配置 gh-pages 分支，并指定分支部署路径为对应的目录（根目录或 docs）。
+
+##### 5.2.2. GitHub Actions 部署 (还未实践，待实践后再补充)

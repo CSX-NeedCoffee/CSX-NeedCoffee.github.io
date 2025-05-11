@@ -1,4 +1,4 @@
-import { defineClientConfig } from 'vuepress/client'
+import { defineClientConfig } from "vuepress/client";
 // import RepoCard from 'vuepress-theme-plume/features/RepoCard.vue'
 // import NpmBadge from 'vuepress-theme-plume/features/NpmBadge.vue'
 // import NpmBadgeGroup from 'vuepress-theme-plume/features/NpmBadgeGroup.vue'
@@ -7,6 +7,11 @@ import { defineClientConfig } from 'vuepress/client'
 // import CustomComponent from './theme/components/Custom.vue'
 
 // import './theme/styles/custom.css'
+import HomePage from "./theme/components/HomePage.vue";
+import CardContainer from "./theme/components/CardContainer.vue";
+import LinkCard from "./theme/components/LinkCard.vue";
+import ProjectItem from "./theme/components/ProjectItem.vue";
+import MySwitch from "./theme/components/MySwitch.vue";
 
 export default defineClientConfig({
   enhance({ app }) {
@@ -17,6 +22,10 @@ export default defineClientConfig({
     // app.component('Swiper', Swiper) // you should install `swiper`
 
     // your custom components
-    // app.component('CustomComponent', CustomComponent)
+    app.component("HomePage", HomePage);
+    app.component("CardContainer", CardContainer);
+    app.component("LinkCard", LinkCard);
+    app.component("ProjectItem", ProjectItem);
+    app.component("MySwitch", MySwitch);
   },
-})
+});

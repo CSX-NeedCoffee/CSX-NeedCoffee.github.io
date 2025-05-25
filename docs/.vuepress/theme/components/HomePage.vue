@@ -1,26 +1,31 @@
 <template>
   <div class="home-container">
-    <!-- Gradient Background -->
-    <div class="background-gradient"></div>
+    <!-- 背景图 -->
+    <div class="background-gradient">
+      <div class="img-container">
+        <img :src="'/images/home-bg1.jpg'" :class="{ active: !isDark }" />
+        <img :src="'/images/home-bg1-dark.jpg'" :class="{ active: isDark }" />
+      </div>
+    </div>
 
-    <!-- Content Container -->
+    <!-- 主容器 -->
     <div class="content-wrapper">
-      <!-- Left Column - Profile -->
+      <!-- Left Column - 头像列 -->
       <div class="profile-column">
         <img src="/images/avatar.JPG" alt="CSX" class="avatar" />
         <div class="profile profile-card">
           <p><map-pin />ShenZhen</p>
           <p><School />ECUT</p>
         </div>
-        <div class="tags profile-card">
+        <!-- <div class="tags profile-card">
           <span class="tag" v-for="tag in tags" :key="tag">{{ tag }}</span>
         </div>
-        <div class="other profile-card">还没想好写什么......</div>
+        <div class="other profile-card">还没想好写什么......</div> -->
       </div>
 
-      <!-- Right Column - Content -->
+      <!-- Right Column - 内容列 -->
       <div class="content-column">
-        <!-- Top Section -->
+        <!-- Top 自我介绍 -->
         <div class="introduction">
           <h1 class="hero-text">Hi,I'm <span>CSX</span></h1>
           <div class="introduction-text">
@@ -31,8 +36,14 @@
             <span class="purpleText">great</span> is to
             <span class="purpleText">love</span> what you do.
           </div>
+          <!-- 图标 -->
           <div class="iconContainer">
-            <a class="iconItem" onclick="" href="https://github.com/ZYYO666">
+            <!-- github -->
+            <a
+              class="iconItem"
+              onclick=""
+              href="https://github.com/CSX-NeedCoffee/CSX-NeedCoffee.github.io"
+            >
               <svg
                 t="1704870335945"
                 class="icon"
@@ -46,8 +57,10 @@
                   p-id="2488"
                 ></path>
               </svg>
-              <div class="iconTip">Github</div> </a
-            ><a class="iconItem" onclick="" href="mailto:i@zyyo.net">
+              <div class="iconTip">Github</div>
+            </a>
+            <!-- Mail -->
+            <a class="iconItem" onclick="">
               <svg
                 t="1704870588438"
                 class="icon"
@@ -61,35 +74,10 @@
                   p-id="3175"
                 ></path>
               </svg>
-              <div class="iconTip">Mail</div> </a
-            ><a
-              class="iconItem"
-              onclick="pop('./static/img/wxzsm.jpg')"
-              href="javascript:void(0)"
-            >
-              <svg
-                t="1705247464964"
-                class="icon"
-                viewBox="0 0 1024 1024"
-                version="1.1"
-                xmlns="http://www.w3.org/2000/svg"
-                p-id="4987"
-              >
-                <path
-                  d="M995.575172 725.451034c-12.358621-26.835862-38.488276-64.794483-92.689655-94.27862-62.146207-33.721379-136.297931-40.96-208.860689-20.303448l-99.928276 28.424827-279.304828-126.057931H22.775172v489.401379h509.704828l432.375172-195.266207c15.006897-6.708966 26.835862-19.42069 32.662069-34.957241 5.649655-15.36 4.943448-31.955862-1.942069-46.962759z m-482.162758 188.910345H111.051034V601.688276h184.673104l166.664828 75.387586-3.354483 0.882759h-170.372414v88.275862H471.393103l246.819311-70.267586c49.434483-14.124138 101.517241-9.357241 142.653793 12.888275 18.184828 9.886897 30.72 20.833103 39.371034 30.896552l-386.824827 174.609655z"
-                  p-id="4988"
-                ></path>
-                <path
-                  d="M695.437241 163.486897l58.615173-142.30069h-397.24138l66.736552 143.36c-121.82069 53.142069-207.095172 174.433103-207.095172 315.674483 0 28.601379 3.531034 57.202759 10.593103 84.744827l85.627586-21.715862c-5.12-20.48-7.768276-41.666207-7.768275-63.028965 0-141.241379 114.758621-256 256-256s256 114.758621 256 256c0 51.023448-14.830345 100.104828-43.078621 142.300689l73.268965 49.08138c37.958621-56.673103 58.085517-122.88 58.085518-191.382069-0.176552-141.947586-86.686897-264.121379-209.743449-316.733793zM467.508966 91.983448h180.965517l-21.009655 50.846897a348.16 348.16 0 0 0-66.913104-6.708966c-23.834483 0-46.962759 2.471724-69.384827 7.062069l-23.657931-51.2z"
-                  p-id="4989"
-                ></path>
-                <path
-                  d="M683.431724 427.431724v-70.62069h-38.311724l30.190345-30.190344-49.964138-49.964138-62.49931 62.49931h-6.002759L494.344828 276.656552l-49.787587 49.964138 30.013793 30.190344h-38.311724v70.62069h88.275862v35.310345h-88.275862v70.62069h88.275862v52.965517h70.62069v-52.965517h88.275862v-70.62069h-88.275862v-35.310345z"
-                  p-id="4990"
-                ></path>
-              </svg>
-              <div class="iconTip">赞助</div> </a
-            ><a
+              <div class="iconTip">Mail</div>
+            </a>
+            <!-- QQ -->
+            <a
               class="iconItem"
               onclick="pop('./static/img/qq.jpg')"
               href="javascript:void(0)"
@@ -109,38 +97,40 @@
               </svg>
               <div class="iconTip">QQ</div>
             </a>
-            <a class="switchItem" href="javascript:void(0)">
-              <MySwitch v-model="isDark"></MySwitch>
-            </a>
+            <SunMoonSwitcher v-model="isDark"></SunMoonSwitcher>
           </div>
         </div>
         <!-- Bottom Section -->
         <div class="knowledge-section">
-          <!-- Study Notes -->
+          <!-- 学习笔记 -->
           <div class="notes-column">
             <h3><span class="title-icon">📚</span>学习笔记</h3>
             <div class="item-card">
-              <project-item></project-item>
-              <project-item></project-item>
-              <project-item></project-item>
-              <project-item></project-item>
+              <project-item title="后端笔记" desc="主要技术方向" />
+              <project-item title="后端笔记" desc="主要技术方向" link="" />
+              <project-item
+                title="工具合集"
+                desc="站在巨人肩膀上的牛马"
+                link="tools/"
+              />
             </div>
           </div>
-          <div class="project-column">
+          <!-- 项目 -->
+          <!-- <div class="project-column">
             <h3><span class="title-icon">📚</span>项目</h3>
             <div class="item-card">
-              <project-item></project-item>
-              <project-item></project-item>
-              <project-item></project-item>
-              <project-item></project-item>
+              <project-item title="后端笔记" desc="主要技术方向" />
+              <project-item title="后端笔记" desc="主要技术方向" />
+              <project-item title="后端笔记" desc="主要技术方向" />
+              <project-item title="后端笔记" desc="主要技术方向" />
             </div>
-          </div>
+          </div> -->
 
-          <!-- Technical Articles -->
-          <div class="articles-column">
+          <!-- 文章 -->
+          <!--  <div class="articles-column">
             <h3>✍️ 文章</h3>
             <ul class="articles-list">
-              <li v-for="article in technicalArticles" :key="article">
+              <li v-for="article in 2" :key="article">
                 <LinkCard
                   id="456"
                   title="CSS 现代布局技术"
@@ -149,7 +139,7 @@
                 />
               </li>
             </ul>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -157,30 +147,10 @@
 </template>
 
 <script setup>
-import {
-  MapPin,
-  School,
-  Github,
-  Twitter,
-  Linkedin,
-  Mail,
-} from "lucide-vue-next";
+import { MapPin, School } from "lucide-vue-next";
 import { useDarkMode } from "vuepress-theme-plume/composables";
+import SunMoonSwitcher from "./SunMoonSwitcher.vue";
 const isDark = useDarkMode();
-const switchTheme = (d) => {
-  isDark.value = d;
-};
-
-const tags = ["Distributed Systems", "网瘾少年", "唱歌", "跳舞", "打篮球"];
-
-const technicalArticles = [
-  "如何设计一个秒杀系统",
-  "Spring响应式编程实践",
-  "微服务架构下的数据一致性",
-  "从单体到分布式的演进之路",
-  "Kubernetes中的服务发现机制",
-  "DDD实战：领域模型设计",
-];
 </script>
 
 <style scoped lang="scss">
@@ -223,8 +193,10 @@ a:focus {
   font-family: "Roboto Mono", "Consolas", monospace;
   color: var(--text-primary);
 }
-[data-theme="dark"] .content-wrapper {
-  --text-primary: #e0e0e0; /* 浅灰（正文） */
+[data-theme="dark"] {
+  .content-wrapper {
+    --text-primary: #e0e0e0; /* 浅灰（正文） */
+  }
 }
 .home-container {
   position: relative;
@@ -235,12 +207,27 @@ a:focus {
     left: 0;
     width: 100%;
     height: 100vh;
-    // background-image: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
-    // background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
-    background-image: url("/images/home-bg.jpg  ");
-    background-size: cover;
+    filter: blur(10px);
 
-    filter: blur(5px);
+    .img-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      > img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: opacity 2.5s ease;
+        opacity: 0;
+
+        &.active {
+          opacity: 1;
+        }
+      }
+    }
   }
 
   .content-wrapper {
@@ -305,8 +292,7 @@ a:focus {
       }
 
       .profile-card {
-        background: rgba(255, 255, 255, 0.25);
-        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.15);
         border-radius: 13px;
         padding: 20px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);

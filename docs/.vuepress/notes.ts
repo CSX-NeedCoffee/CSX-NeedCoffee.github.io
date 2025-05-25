@@ -11,8 +11,14 @@ const tools = defineNoteConfig({
   sidebar: ["", "git"],
 });
 
+const java = defineNoteConfig({
+  dir: "java",
+  link: "/java",
+  sidebar: ["", "juc"],
+});
+
 export const notes = defineNotesConfig({
   dir: "notes",
   link: "/",
-  notes: [demoNote, tools],
+  notes: [demoNote, tools, java],
 });

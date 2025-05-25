@@ -1,11 +1,31 @@
+<script setup>
+defineProps({
+  title: {
+    type: String,
+    default: "",
+  },
+  desc: {
+    type: String,
+    default: "",
+  },
+  link: {
+    type: String,
+    default: "javascript:void(0)",
+  },
+  img: {
+    type: String,
+    default: "/images/icon2.svg",
+  },
+});
+</script>
 <template>
-  <a class="projectItem a" target="_blank" href="https://www.bootstrapmb.com">
+  <a class="projectItem a" :href="link">
     <div class="projectItemLeft">
-      <h1>后端笔记</h1>
-      <p>主要技术方向</p>
+      <h1>{{ title }}</h1>
+      <p>{{ desc }}</p>
     </div>
     <div class="projectItemRight">
-      <img src="/images/icon2.svg" alt="" />
+      <img :src="img" alt="" />
     </div>
   </a>
 </template>

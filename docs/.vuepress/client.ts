@@ -12,6 +12,7 @@ import CardContainer from "./theme/components/CardContainer.vue";
 import LinkCard from "./theme/components/LinkCard.vue";
 import ProjectItem from "./theme/components/ProjectItem.vue";
 import MySwitch from "./theme/components/MySwitch.vue";
+import CTable from "./theme/components/CTable.vue";
 
 export default defineClientConfig({
   enhance({ app }) {
@@ -27,5 +28,6 @@ export default defineClientConfig({
     app.component("LinkCard", LinkCard);
     app.component("ProjectItem", ProjectItem);
     app.component("MySwitch", MySwitch);
+    app.component("CTable", CTable);
   },
 });

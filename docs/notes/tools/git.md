@@ -1,5 +1,5 @@
 ---
-title: git
+title: git手册
 createTime: 2025/05/02 13:29:03
 permalink: /tools/zuduacbr/
 outline: "deep"
@@ -103,11 +103,18 @@ outline: "deep"
   ```
 
 - 删除分支
+
   ```bash
   # 会询问一些信息
   git branch -d 分支名
   # 强制删除分支（不询问）
   git branch -D 分支名
+  ```
+
+- 创建无历史记录的分支（孤立分支）
+
+  ```bash
+  git checkout --orphan 分支名
   ```
 
 #### 3.4. 远程仓库操作
@@ -154,9 +161,85 @@ outline: "deep"
     ```
 
 - 删除远程分支
+
   ```bash
   git push origin -d 分支名
   ```
+
+- 创建新分支并同步到远程仓库
+
+  ```bash
+  # 1. 创建并切换到新分支
+  git checkout -b 新分支名
+
+  # 2. 推送新分支到远程仓库（自动关联）
+  git push -u origin 新分支名
+  ```
+
+#### 3.5. Tag 标签操作
+
+Git Tag（标签）用于标记特定的提交（如版本发布），主要有以下作用：
+
+- 重要节点：标记项目里程碑或稳定版本;
+- 快速回滚：通过标签直接切换到指定版本代码;
+- 如果 node 包通过 git 发布，则可用于标记包版本。（如 esign-ui-vue）
+
+有以下标签分类：
+
+- 轻量标签（Lightweight）：仅是一个指向特定提交的引用；
+- 附注标签（Annotated）：包含完整的标签信息（作者、日期、说明等），推荐使用。
+
+##### 3.5.1. 创建标签
+
+```bash
+#创建轻量标签：
+git tag 标签名
+#创建附注标签（推荐）：
+git tag -a 标签名 -m "标签说明"
+#对历史提交打标签：
+git tag -a 标签名 CommitID -m "标签说明"
+```
+
+##### 3.5.2. 查看标签
+
+```bash
+# 查看所有标签
+git tag
+#查看标签详情：
+git show 标签名
+```
+
+##### 3.5.3. 推送标签到远程仓库
+
+```bash
+#推送单个标签：
+git push origin 标签名
+#推送所有未同步的标签：
+git push origin --tags
+```
+
+##### 3.5.4. 删除标签
+
+```bash
+#删除本地标签：
+git tag -d 标签名
+#删除远程标签：
+git push origin :refs/tags/标签名
+```
+
+##### 3.5.5. 检出标签
+
+切换到标签对应的代码状态（此时为只读状态，需创建新分支才能修改）：
+
+```bash
+git checkout 标签名
+```
+
+若需修改，建议基于标签创建分支：
+
+```bash
+git checkout -b 新分支名 标签名
+```
 
 ### 4. [GitHub Actions](https://docs.github.com/zh/actions)
 

@@ -1,226 +1,439 @@
 ---
 title: JUC
 createTime: 2025/05/25 16:59:01
-permalink: /java/dq68yjbl/
+permalink: /java/u92wmycg/
 ---
 
 # Java 并发编程
 
 ## 1. 简介
 
-### 多线程概念
+### 1.1 概念
 
-- 1.什么是多线程?
+- 有了多线程，我们就可以让程序同时做多件事情。
 
-  有了多线程，我们就可以让程序同时做多件事情。
+### 1.2 目的
 
-- 多线程的作用?
+- 实现异步操作；
+- 提升效率（单核 CPU 不能提升效率，因为其本质上还是线程串行执行）。
 
-  提高效率。
+### 1.3 使用说明
 
-- 多线程的应用场景?
+多线程能否提高程序运行效率还是要分情况的：
 
-  只要你想让多个事情同时运行就需要用到多线程。
+- `设计角度`：有些任务，经过精心设计，将任务拆分，并行执行，当然可以提高程序的运行效率。但并不是所有计算任务都能拆分（参考阿姆达尔定律）；也不是所有任务都需要拆分，任务的目的如果不同，谈拆分和效率没啥意义
 
-  比如:软件中的耗时操作、所有的聊天软件、所有的服务器
+- `IO 角度`：IO 操作不占用 cpu，只是我们一般拷贝文件使用的是【阻塞 IO】，这时相当于线程虽然不用 cpu，但需要一直等待 IO 结束，没能充分利用线程。所以才有后面的【非阻塞 IO】和【异步 IO】优化。
 
-### 1.2 并发与并行
+### 1.4 并发与并行
 
-- 并发：在同一时刻，有很多个命令在单元中央交换执行
-  并行：在同一时刻，有很多个命令在多个中央处理器上同时执行
+- `并发`：在同一时刻，有多个指令在 CPU 上交替执行；
+- `并行`：在同一时刻，有多个指令在 CPU 上同时执行。
 
-- 进程通信：
+- `进程通信`：同一台计算机的进程通信称为 IPC(Iner-process communication)；不同计算机之间的进程通信需要通过网络，并遵守共同的协议，例如 HTTP；
+- `线程通信`：共享进程内的内存，一个例子是多个线程可以访问同一个共享变量；线程更轻量，线程上下文切换成本一般要比进程上下文切换低。
 
-  - 同一台计算机的进程通信称为 IPC(Iner-process communication)；
-  - 不同计算机之间的进程通信，需要通过网络，并遵守共同的协议，例如 HTTP；
+### 1.5 线程上下文切换（Thread Context Switch）
 
-- 线程通信
+因为以下一些原因导致 cpu 不再执行当前的线程，转而执行另一个线程的代码：
 
-  线程通信相对简单，因为它们共享进程内的内存，一个例子是多个线程可以访问同一个共享变量；
+- 线程的 cpu 时间片用完；
+- 垃圾回收 ；
+- 有更高优先级的线程需要运行
+- 线程自己调用了 sleep、yield、wait、join、park、synchronized、lock 等方法
 
-  线程更轻量，线程上下文切换成本一般要比进程上下文切换低。
+当 Context Switch 发生时，需要由操作系统保存当前线程的状态，并恢复另一个线程的状态（这个状态包括程序计数器、虚拟机栈中每个栈帧的信息，如局部变量、操作数栈、返回地址），对应 Java 中的概念就是程序计数器，它的作用是记住下一条 jvm 指令的执行地址，是线程私有的 。
 
-### 多线程目的
-
-- 实现异步操作
-- 提升效率（单核 CPU 不能提升效率，因为其本质上还是线程串行执行）
-- 优化办法
-  ![alt text](image.png)
-
-### 线程上下文
-
-![alt text](image-1.png)
+:::warning Context Switch 频繁发生会影响性能
+:::
 
 ## 2. 创建线程
 
 ### 方式一：继承 Thread 类
 
-## ![alt text](image-2.png)
+```java
+//1. 创建线程类继承 Thread，重写 run 方法
+public class MyThread extends Thread{
+  @Override
+  public void run() {
+  // 线程执行逻辑
+  for (int i = 0; i < 100; i++) {
+    System.out.println(getName() + "helloWorld");
+  }
+
+  public static void main(String[] args) {
+        //2. 创建线程、设置线程名、启动线程
+        Thread t1 = new MyThread();
+        Thread t2 = new MyThread();
+        t1.setName("线程1: ");
+        t2.setName("线程2: ");
+
+        t1.start();
+        t2.start();
+  }
+}
+```
 
 ### 方式二：实现 Runnable 接口
 
-![alt text](image-3.png)
+```java
+//1. 创建类实现Runnable接口，重写run方法
+public class MyRunnable implements Runnable{
+   @Override
+   public void run() {
+       for (int i = 0; i < 100; i++) {
+           System.out.println(Thread.currentThread().getName() + ": HelloWorld");
+       }
+   }
+}
+```
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        //2. 创建Runnable实现类对象，用于创建线程对象
+        Runnable myRunnable = new MyRunnable();
+
+        //3. 创建线程对象，启动方法
+        Thread t1 = new Thread(myRunnable);
+        Thread t2 = new Thread(myRunnable);
+        t1.setName("线程1");
+        t2.setName("线程2");
+
+        t1.start();
+        t2.start();
+    }
+}
+```
 
 ### 方式三：实现 Callable 接口
 
 - 原理是保护性暂停设计模式。get 方法会阻塞等待线程执行完毕从而拿到执行结果
-  ![alt text](image-4.png)
 
-### 三种方式的优缺点
+```java
+//1. 创建类实现Callable接口，泛型为返回值类型
+public class MyCallable implements Callable<Integer> {
+    @Override
+    public Integer call() throws Exception {
+        //线程执行逻辑: 1-100累加
+        int sum = 0;
+        for (int i = 1; i <= 100; i++) {
+            sum += i;
+        }
+        return sum;
+    }
+}
+```
 
-![alt text](image-5.png)
+```java
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
-### tips：1. 线程一旦启动后就交给操作系统处理，会立马向下执行下一条代码
+public class Main {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        //2. 创建Callable实现类对象
+        MyCallable callable = new MyCallable();
 
-          2.  判断线程执行完毕的方法：线程对象的run方法执行完毕（在run方法末尾加善后工作）
+        //3. 创建FutureTask对象，多个线程就创建多个
+        FutureTask<Integer> future1 = new FutureTask<>(callable);
+        FutureTask<Integer> future2 = new FutureTask<>(callable);
+
+        //4. 创建Thread对象，多个线程就创建多个，启动线程
+        Thread t1 = new Thread(future1);
+        Thread t2 = new Thread(future2);
+        t1.start();
+        t2.start();
+
+        //5. 调用get方法获取返回值
+        System.out.println("线程1执行结果" + future1.get());
+        System.out.println("线程2执行结果" + future2.get());
+    }
+}
+```
+
+**_三种方式的优缺点：_**
+<c-table
+  :columns="[
+    { title: '', key: 'compare', width: '155px' },
+    { title: '优点', key: 'advantage' },
+    { title: '缺点', key: 'disadvantage' }
+  ]"
+  :data="[
+    { compare: '继承Thread类', advantage: '编程比较简单，可以直接使用Thread类中的方法', disadvantage: '扩展性较差，不能再继承其他的类' },
+    { compare: '实现Runnable接口', advantage: '扩展性强，实现该接口的同时还可以继承其他的类', disadvantage: '编程相对复杂，不能直接使用Thread类中的方法' },
+    { compare: '实现Callable接口', advantage: '', disadvantage: '' }
+  ]"
+  :mergeConfig="{
+    advantage: [
+      { row: 1, rowspan: 2, colspan: 1 }
+    ],
+    disadvantage: [
+      { row: 1, rowspan: 2, colspan: 1 }
+    ],
+  }"
+/>
+
+:::tip coding 注意事项
+
+- 线程一旦启动后就交给操作系统处理，会立马向下执行下一条代码
+- 判断线程执行完毕的方法：线程对象的 run 方法执行完毕（在 run 方法末尾加善后工作）
+
+:::
 
 ## 3. Thread 类 API
 
-### 1. getName
+### (1). getName setName
 
-    setName
+- `String getName()`：返回此线程的名称
+- `void setName(String name)`：设置线程的名字（构造方法也可以设置名字）
+- **细节**：
+  1. 如果我们没有给线程设置名字，线程也是有默认的名字的，格式：Thread-X（X 序号，从 0 开始的）
+  2. 如果我们要给线程设置名字，可以用 set 方法进行设置，也可以构造方法设置
 
--
+### (2). currentThread
 
-### 2. currentThread
+- `static Thread currentThread()`：获取当前线程的对象
+- **细节**：
+  当 JVM 虚拟机启动之后，会自动的启动多条线程，其中有一条线程就叫做 main 线程，他的作用就是去调用 main 方法，并执行里面的代码，在以前，我们写的所有的代码，其实都是运行在 main 线程当中
 
--
+### (3). sleep& TimeUnit
 
-### 3. sleep&
+- `static void sleep(long time)`：让线程休眠指定的时间，单位为毫秒
+- **细节**：
+  1. 哪条线程执行到这个方法，那么哪条线程就会在这里停留对应的时间
+  2. 方法的参数：就表示睡眠的时间，单位毫秒，1 秒 = 1000 毫秒
+  3. 当时间到了之后，线程会自动的醒来，继续执行下面的其他代码
+- **补充**：
+  1. sleep 要写在同步代码外效果才明显
+  2. 由 runnable（就绪或运行状态） --> Time_Waiting（计时等待） --> （睡眠结束）runnable
+  3. 被 interrupt()方法打断后抛出 InterruptedException 异常（一般捕获）
+  4. 可以使用 TimeUnit.SECOND.sleep(1) 替代 Thread.sleep(1000)，可以指定单位，可读性更好
 
-TimeUnit
+### (4). setPriority getPriority
 
-- 1.  sleep 要写在同步代码外效果才明显
+- `setPriority(int newPriority)`：设置线程的优先级
+- `final int getPriority()`：获取线程的优先级
+- **要点**：
+  - 线程优先级会提示（hint）调度器优先调度该线程，但它仅仅是一个提示，调度器可以忽略它
+  - 如果 cpu 比较忙，那么优先级高的线程会获得更多的时间片，但 cpu 闲时，优先级几乎没作用
 
-2. 由 runnable（就绪或运行状态） --> Time_Waiting（计时等待）--> （睡眠结束）runnable
-3. 被 interrupt()方法打断后抛出 InterruptedException 异常（一般捕获）
-4. 可以使用 TimeUnit.SECOND.sleep(1) 替代 Thread.spleep(1000)，可以指定单位，可读性更好
+### (5). setDaemon
 
-### 4. setPriority
+- `final void setDaemon(boolean on)`：设置为守护线程
+- **细节**：当其他的非守护线程执行完毕之后，守护线程会陆续结束
+- **通俗理解**：当女神线程结束了，那么备胎也没有存在的必要了
+- **原理及应用**：
+  1. 默认情况下，Java 进程需要等待所有线程都运行结束，才会结束
+  2. 当非守护线程执行完后守护线程将终止执行
+  3. **应用**：
+     - 垃圾回收器线程就是一种守护线程，当所有 java 线程执行完毕后，就没有 GC 的必要了
+     - Tomcat 中的 Acceptor 和 Poller 线程都是守护线程，所以 Tomcat 接收到 shutdown 命令后，不会等待它们处理完当前请求
 
-    getPriority
+### (6). yield
 
--
+- `public static void yield()`：出让线程/礼让线程
+- **说明**：会让当前线程从运行状态变为就绪状态，具体的实现依赖于操作系统的任务调度器
 
--
+### (7). join
 
-### 5. setDaenon
+- `public final void join()`：插入线程/插队线程
+- **要点**：
+  1. `join(n)`：最多等待 n 毫秒
+  2. 在线程 2 中调用线程 1 的 join 方法，线程 2 会等待线程 1 执行完后才执行
+  3. **应用**：实现线程的同步
 
-- 1.  默认情况下，Java 进程需要等待所有线程都运行结束，才会结束
+### (8). start
 
-2. 当非守护线程执行完后守护线程将终止执行
+- **实例方法**：启动线程
 
-- 应用： 1. 垃圾回收器线程就是一种守护线程；当所有 java 线程执行完
-  毕后，就没有 GC 的必要了 2. Tomcat 中的 Acceptor 和 Poller 线程都是守护线程，所以
-  Tomcat 接收到 shutdown 命令后，不会等待它们处理完当
-  前请求
+### (9). getStatus
 
-### 6. yield
+- **获取线程状态**：Java 中线程状态是用 6 个 enum 表示，分别为：NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, TERMINATED
 
-- 会让当前线程从运行状态变为就绪状态，具体的实现依赖于操作系统的任务调度器
+### (10). interrupt()
 
-### 7. join
+- **打断阻塞线程**
+  - 抛出 InterruptedException
+  - 清空打断标记（此时调用 `isInterrupted() = false`）
+- **打断正常线程和 park 线程**
+  - 此时调用 `isInterrupted() = true`，被打断的线程可根据此条件决定线程的下一步操作
 
-- 1.  join（n）：最多等待 n 毫秒
+### (11). interrupted & isInterrupted
 
-2. 在线程 2 中调用线程 1 的 join 方法，线程 2 会等待线程 1 执行完后才执行
+- 调用`Thread.interrupted()`后返回打断标记，并清除打断状态（此时调用`isInterrupted = false`）
+- 调用当前线程对象的`isInterrupted()`后返回打断标记，不会清除打断状态
 
-3. 应用：实现线程的同步
+### (12). park&unpark
 
-### 8. start
+- **使用**
 
-- 实例方法： 启动线程
+  - 暂停当前线程：`LockSupport.park();`
+  - 恢复某个线程的运行：`LockSupport.unpark(暂停线程对象)`
 
-### 9. getStatus
+:::note 与 interrupted 的联系
 
--
+- 调用`interrupt`方法打断被`LockSupport.park()`的线程不会清空打断状态（`isInterrupted = true`）
+- 当打断状态为`true`时再执行`park`方法将失效，若想生效则可以调用`Thread.interrupted()`将打断标记设为`false`
 
-### 10.interrupt()
+:::
 
-- 打断阻塞线程
+:::note 与 wait、notify 的联系
 
-- 1.  抛出 InterruptedException
+- `wait`，`notify`和`notifyAll`必须配合`Object Monitor`一起使用，而`park`，`unpark`不必
+- `park & unpark`是以线程为单位来【阻塞】和【唤醒】线程，而`notify`只能随机唤醒一个等待线程，`notifyAll`是唤醒所有等待线程，就不那么【精确】
+- `park & unpark`可以先`unpark`，而`wait & notify`不能先`notify`
 
-2. 清空打断标记（isInterrupted() = false）
+:::
 
-- 打断正常线程
-  和 park 线程
+::: warning 不推荐使用的 API
+还有一些不推荐使用的方法，这些方法已过时，容易破坏同步代码块，造成线程死锁
 
-- isInterrupted() = true，被打断的线程可根据此条件决定线程的下一步操作
-
-### 11. interrupted
-
-     isInterrupted
-
-- 调用 Thread.interrupted() 后返回打断标记，并清除打断状态（isInterrupted = false）
-
-- 调用当前线程对象的 isInterrupted() 后返回打断标记，不会清除打断状态
-
-### 12. park&unpark
-
-- 简介及使用
-
-- [原理](file:D:\java\笔记\并发编程笔记\并发编程笔记\并发编程_原理.pdf)
-
-  - 使用
-
-  -
-
-- park&interrupted
-
-- 1.  调用 interrupt 方法打断被 LockSupport.park()的线程不会清空打断状态（isInterrupted = true）
-
-  - 2.  当打断状态为 true 时再执行 park 方法将失效，若想生效则可以调用 Thread.interrupted()将打断标记设为 false
-
-- park&wait、notify
-
-- 1.  wait，notify 和 notifyAll 必须配合 Object Monitor 一起使用，而 park，unpark 不必
-
-  - 2.  park & unpark 是以线程为单位来【阻塞】和【唤醒】线程，而 notify 只能随机唤醒一个等待线程，notifyAll 是唤醒所有等待线程，就不那么【精确】
-
-  - 3.  park & unpark 可以先 unpark，而 wait & notify 不能先 notify
-
-### 不推荐使用的 API
-
--
+<c-table
+  style="width: 100%; table-layout: fixed;"
+  :columns="[
+    { title: '方法名', key: 'name' },
+    { title: '功能说明', key: 'desc' }
+  ]"
+  :data="[
+    { name: 'stop()', desc: '停止线程运行' },
+    { name: 'suspend()', desc: '挂起（暂停）线程运行' },
+    { name: 'resume()', desc: '恢复线程运行' }
+  ]"
+/>
+:::
 
 ## 4. 线程生命周期
 
-### 生命周期对应 6 个状态（根据 JUC 中的枚举类），其中运行表示线程交给操作系统执行，在 JVM 中无定义
+生命周期对应 6 个状态（根据 JUC 中的枚举类），其中运行表示线程交给操作系统执行，在 JVM 中无定义
 
-### 注意：
+![alt text](QQ_1748776110229.png)
 
-    1.  java中runnable包括就绪状态和运行状态；
-    2. 调用wait方法进入阻塞前会释放锁，而sleep和join不会；
-    3. 如果调用了阻塞 API，如 BIO 读写文件，这时该线程实际不会用到 CPU，会导致线程上下文切换，进入【阻塞状态】（操作系统层面）；
-        但由于 BIO 导致的线程阻塞，在 Java 里无法区分，仍然认为是runnable状态
+:::tip
 
-### [线程状态转换](file:///D:/java/%E7%AC%94%E8%AE%B0/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E7%AC%94%E8%AE%B0/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E7%AC%94%E8%AE%B0/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B.pdf)
+- java 中 runnable 包括就绪状态和运行状态；
+- 调用 wait 方法进入阻塞前会释放锁，而 sleep 和 join 不会；
+- 如果调用了阻塞 API，如 BIO 读写文件，这时该线程实际不会用到 CPU，会导致线程上下文切换，进入【阻塞状态】（操作系统层面）;但由于 BIO 导致的线程阻塞，在 Java 里无法区分，仍然认为是 runnable 状态。
+
+:::
 
 ## 5. 线程安全
 
 ### 1. 简介
 
-- 1.  根本原因
+`产生线程安全问题的根本`：多个线程同时对共享资源进行读写操作时因线程上下文切换而发生的指令交错。
 
-- 在多个线程同时对共享资源读写操作时由于线程上下文切换而发生字节码指令交错
+`临界区`：一段代码块内如果存在对共享资源的多线程读写操作，称这段代码块为临界区。
 
-- 2. 临界区与竞态条件
+`竞态条件`： 多个线程在临界区内执行，因代码执行序列不同导致结果无法预测，称之为发生了竞态条件。
 
-- 临界区：一段代码块内如果存在对共享资源的多线程读写操作，称这段代码块为临界区
+线程安全解决方案：
 
-  - 竞态条件： 多个线程在临界区内执行，由于代码的执行序列不同而导致结果无法预测，
-    称之为发生了竞态条件
+- `阻塞式解决`：包括 synchronized、各种互斥锁等（ReentryLock）。
+- `非阻塞时解决`：使用原子变量。
 
-- 3. 解决办法
+### 2. 常见线程安全类
 
--
+::: details 不可变类（状态创建后不可修改）
 
-- 4. 常见线程安全类
+- String
+- Integer、Long、Double 等基本类型包装类
+- BigInteger、BigDecimal（java.math 包）
+- LocalDate、LocalTime 等（Java 8 时间 API）
+- File（文件路径不可变）
 
-- - 注意（一定要看）
+:::
 
-  - - 但它们多个方法的组合不是原子的
+::: details 同步类（基于 synchronized 关键字）
+
+- StringBuffer
+- Vector（同步的 List 实现）
+- Hashtable（同步的 Map 实现）
+- Properties（继承自 Hashtable）
+- Collections.synchronizedXXX()，如：Collections.synchronizedList()、synchronizedMap()等包装类。
+
+:::
+
+::: details JUC 包下的高效线程安全类（基于 CAS、分段锁、无锁算法等实现的高并发类）
+
+`集合类：`
+
+- ConcurrentHashMap（分段锁/CAS，替代 Hashtable）
+- CopyOnWriteArrayList（写时复制，适合读多写少）
+- CopyOnWriteArraySet
+- BlockingQueue 接口及其实现（如 ArrayBlockingQueue、LinkedBlockingQueue）
+
+`原子类（java.util.concurrent.atomic）`：
+
+- AtomicInteger、AtomicLong、AtomicBoolean
+
+- AtomicReference、AtomicStampedReference
+
+- LongAdder、DoubleAdder（高并发计数优化）
+
+`锁与同步工具类：`
+
+- ReentrantLock（可重入锁）
+- CountDownLatch、CyclicBarrier、Semaphore
+- Exchanger（线程间交换数据）
+
+:::
+
+::: details 其他线程安全类
+
+- ThreadLocal（线程隔离变量，非全局安全但避免竞争）
+- Random（线程安全但性能差，推荐用 ThreadLocalRandom）
+- javax.servlet.ServletContext（Web 容器中线程安全）
+
+:::
+
+分类对比总结
+<c-table 
+  :columns="[
+    { title: '分类', key: 'category' },
+    { title: '特点', key: 'feature' },
+    { title: '典型示例', key: 'examples' }
+  ]" 
+  :data="[
+    { 
+      category: '不可变类', 
+      feature: '无状态修改，天然线程安全', 
+      examples: 'String, BigInteger' 
+    },
+    { 
+      category: '同步类（JDK旧）', 
+      feature: '方法级 synchronized，性能低', 
+      examples: 'Vector, Hashtable' 
+    },
+    { 
+      category: 'JUC包', 
+      feature: '高性能并发控制（CAS/分段锁）', 
+      examples: 'ConcurrentHashMap' 
+    },
+    { 
+      category: '原子类', 
+      feature: '无锁算法（CAS）', 
+      examples: 'AtomicLong, LongAdder' 
+    },
+  ]" 
+/>
+
+::: important 这里说的线程安全的类是指，多个线程调用他们`同一个实例的某个方法`时是线程安全的，但调用它们多个方法的组合并不安全，称之为==非原子操作==。
+
+如以下代码：
+
+```java
+Hashtable table = new Hashtable<>();
+if( table.get("key") == null ) {
+  table.put("key", "value");
+}
+```
+
+![alt text](QQ_1751383186988.png)
+
+:::
+
+todo。。。
 
 - 5.  什么场景可能会出现线程不安全
 

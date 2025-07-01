@@ -5,3 +5,4 @@ permalink: /tools/
 ---
 
 - [git](./git.md)
+- [npm](./npm.md)

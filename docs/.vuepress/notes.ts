@@ -22,6 +22,12 @@ const jvm = defineNoteConfig({
   sidebar: ["","introduce/", "ClassTech/", "ClassLoader/", "MemoryStruc/", "GC/"],
 });
 
+const spring = defineNoteConfig({
+  dir: "java/spring",
+  link: "/java/spring",
+  sidebar: ["", "theory/"],
+});
+
 
 const front = defineNoteConfig({
   dir: "front",
@@ -32,5 +38,5 @@ const front = defineNoteConfig({
 export const notes = defineNotesConfig({
   dir: "notes",
   link: "/",
-  notes: [demoNote, tools, jvm, front],
+  notes: [demoNote, tools, jvm, front, spring],
 });

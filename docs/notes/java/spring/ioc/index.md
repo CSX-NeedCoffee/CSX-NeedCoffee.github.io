@@ -1,5 +1,5 @@
 ---
-title: Spring IOC原理
+title: Spring IOC
 createTime: 2025/11/29 17:50:50
 permalink: /java/spring/bwxyul37/
 ---
@@ -342,38 +342,8 @@ ClassPathXmlApplicationContext 与 FileSystemXmlApplicationContext 的原理:
 
 ## 三、后处理器
 
-### 1. Bean生命周期
-_实例化 -> 依赖注入 -> 初始化 -> 销毁_
-:::details Bean生命周期
-```java
-@Component
-public class LifecycleBean {
-
-    public LifecycleBean() {
-        System.out.println("Lifecycle 实例化....");
-    }
-
-    @Autowired
-    public void injectTest(@Value("JAVA_HOME") String javaHome) {
-        System.out.println("Lifecycle 依赖注入; 注入属性：" + javaHome);
-    }
-
-    @PostConstruct
-    public void init() {
-        System.out.println("Lifecycle 初始化方法...");
-    }
-    
-    @PreDestroy
-    public void destroy() {
-        System.out.println("Lifecycle 销毁方法...");
-    }
-}
-
-```
-:::
-
-### 2. BeanPostProcessor
-在`BeanFactory`中注册了`BeanPostProcessor` Bean后处理器后，会通过模板方法设计模式执行工厂中注册的所有后处理器的相关接口方法，来为Bean生命周期的各个阶段提供拓展。
+### 1. BeanPostProcessor
+在`BeanFactory`中注册了`BeanPostProcessor` Bean后处理器后，会通过模板方法设计模式==在Bean生命周期的各个阶段==执行工厂中注册的所有后处理器的相关接口方法。
 
 :::details 接口定义
 
@@ -590,7 +560,7 @@ public class Bean1 {
 
 :::
 
-### 3. BeanFactoryPostProcessor
+### 2. BeanFactoryPostProcessor
 `BeanFactory 后处理器`：为BeanFactory 提供了扩展功能:
 
 :::details 接口定义
@@ -847,8 +817,278 @@ public class AtBeanPostProcessor implements BeanDefinitionRegistryPostProcessor 
     // 设置自动装配模式为构造器，这样Spring会自动查找匹配的Bean作为构造器参数
     builder.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR);
     // （可选）为BeanDefinition指定初始化方法，当此Bean初始化时会调用
-    builder.setInitMethodName(...);
+    // 注意：initMethod实在Bean类中定义的方法，而不是Bean所在配置类中定义的
+    builder.setInitMethodName(initMethod);
     AbstractBeanDefinition bd = builder.getBeanDefinition();
     ```
 
 :::
+
+## 四、Aware接口
+
+```java
+public class Bean1 implements BeanNameAware, ApplicationContextAware {
+    @Override
+    public void setBeanName(String s) {
+        System.out.println("当前Bean "+ this + " 名字是：" + s);
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        System.out.println("当前Bean " + this + " 所在的容器是：" + applicationContext);
+    }
+}
+```
+
+:::info @Autowire、@PostConstruct等注解失效场景
+
+1. 一般来说IOC容器哦的执行流程是：
+   - 执行BeanFactoryPostProcess -> 注册执行BeanPostProcess -> 单例Bean的创建、初始化 -> 执行BeanPostProcess扩展，如解析@Autowire、@PostConstruct等； -> 执行Aware接口 -> 创建成功
+2. 但是如果在配置类中通过@Bean注解创建了BeanFactoryPostProcess，那么此配置类会被提前创建，以执行PostProcess的功能，这就导致执行顺序变为：
+   - 创建包含PostProcess的配置类 -> 配置类单例Bean的创建、初始化 -> 执行配置类Bean的Aware、Initialization接口 -> 执行BeanFactoryPostProcess -> 注册执行BeanPostProcess；不包含PostProcess的配置类Bean、正常Bean的创建、初始化、依赖注入、注解解析等（同上一点） 。所以就导致包含PostProcess的配置类中的@Autowire、@PostConstruct注解未被解析而失效
+
+
+- 以上的执行顺序是以`GenericApplicationContext`容器的refresh方法为例，其他容器的执行顺序可能会有差异（其实是我没了解过其他容器的执行顺序）
+- ==我们在业务开发时一般不会在配置类中配置PostProcess，但为了保险起见，若想要在Bean中获取当前Bean的ApplicationContext，或想要确保初始化方法一定能执行，就使用Aware接口、Initialization接口的方式。==
+
+:::
+
+## 五、Bean生命周期
+以下为主要阶段，实际上IOC容器可能还在这些阶段的前后执行一些操作。
+### 1. 初始化
+:::details 三种方式定义初始化方法
+
+```java
+public class InitDemo implements InitializingBean {
+
+    @PostConstruct
+    public void initMethod1() {
+        System.out.println("初始化方法，执行顺序：1");
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        System.out.println("初始化方法，执行顺序：2");
+    }
+
+    public void initMethod2() {
+        System.out.println("@Bean注解initMethod参数指定的初始化方法，执行顺序：3");
+    }
+}
+
+// 配置类
+public class ConfigBean {
+
+  @Bean(initMethod = "initMethod2")
+  public InitDemo initDemo() {
+    return new InitDemo();
+  }
+}
+```
+
+:::
+### 2. 依赖注入
+
+### 3. 销毁
+:::details 三种方式定义销毁方法
+
+```java
+
+public class DestroyDemo implements DisposableBean {
+
+    @PreDestroy
+    public void destroyMethod1() {
+        System.out.println("销毁方法，执行顺序：1");
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        System.out.println("销毁方法，执行顺序：2");
+    }
+
+    public void destroyMethod2() {
+        System.out.println("@Bean注解destroyMethod参数指定的销毁方法，执行顺序：3");
+    }
+}
+
+// 配置类
+public class ConfigBean {
+
+  @Bean(destroyMethod = "destroyMethod2")
+  public DestroyDemo destroyDemo() {
+    return new DestroyDemo();
+  }
+
+}
+```
+
+:::
+
+:::details 示例
+
+```java
+
+public class LifecycleDemo implements InitializingBean, DisposableBean {
+
+  @PostConstruct
+  public void initMethod1() {
+    System.out.println("初始化方法，执行顺序：1");
+  }
+
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    System.out.println("初始化方法，执行顺序：2");
+  }
+
+  public void initMethod2() {
+    System.out.println("@Bean注解init参数指定的初始化方法，执行顺序：3");
+  }
+
+  @PreDestroy
+  public void destroyMethod1() {
+    System.out.println("销毁方法，执行顺序：1");
+  }
+
+  @Override
+  public void destroy() throws Exception {
+    System.out.println("销毁方法，执行顺序：2");
+  }
+
+  public void destroyMethod2() {
+    System.out.println("@Bean注解destroyMethod参数指定的销毁方法，执行顺序：3");
+  }
+}
+
+// 配置类
+public class ConfigBean {
+
+  @Bean(initMethod = "initMethod2", destroyMethod = "destroyMethod2")
+  public LifecycleDemo lifecycleDemo() {
+    return new LifecycleDemo();
+  }
+}
+
+// IOC 容器配置
+public class Main {
+    public static void main(String[] args) {
+        GenericApplicationContext context = new GenericApplicationContext();
+
+        context.registerBean(ConfigBean.class);
+
+        // 添加处理常用注解的后处理器
+        AnnotationConfigUtils.registerAnnotationConfigProcessors(context.getDefaultListableBeanFactory());
+        // 注册配置类Bean
+        context.registerBean(ConfigBean.class);
+
+        context.refresh();
+
+        context.close();
+    }
+}
+
+```
+:::
+
+## 六、Scope 作用域
+
+Scope为Bean的作用域，可通过@Scope注解指定。
+
+### 1. singleton
+默认作用域，注册的Bean为单例Bean，Spring IOC容器启动时就会创建并缓存。
+
+### 2. prototype
+- 每次获取prototype bean时，都会创建一个新的bean实例返回。
+- 使用prototype bean时，spring并不会帮你销毁（@PreDistroy无效)。
+
+```java
+public class PrototypeMain {
+
+    public static void main(String[] args) {
+        // 使用注解开发的容器
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
+        System.out.println(context.getBean("prototypeBean")); // PrototypeBean@5f16132a
+        System.out.println(context.getBean("prototypeBean")); // PrototypeBean@69fb6037
+        System.out.println(context.getBean("prototypeBean")); // PrototypeBean@36d585c
+        // 关闭容器
+        context.close();
+    }
+
+    static class Config {
+
+        @Scope("prototype")
+        @Bean
+        public PrototypeBean prototypeBean() {
+            return new PrototypeBean();
+        }
+    }
+}
+```
+
+:::tip 由于Spring不会自动销毁prototype bean，使用时需要注意内存泄漏问题
+
+若prototype bean被无法被GC或正确销毁，就会造成内存泄漏，例如以下常见场景：
+
+- 在单例Bean中持有prototype Bean的引用；因为单例Bean在创建IOC容器时就会缓存到静态Map中，只有当容器关闭时才会被销毁。
+- 从IOC容器中获取到了prototype bean，例如加入了静态列表中，那么此Bean由于强引用将不会被GC，从而造成内存泄漏。
+
+:::
+
+### 3. Web作用域
+- request：每次请求都会创建一个新的Bean实例；
+- session：同一个Session会话中获取到同一个Bean；
+- application作用域：同一个ServletContext内获取到同一个Bean。
+
+```java
+public class App {
+
+    public static void main(String[] args) {
+        SpringApplication.run(App.class, args);
+        System.out.println("------应用启动成功--------");
+    }
+
+    @RestController
+    static class TestController {
+
+        @Autowired
+        private ApplicationContext applicationContext;
+
+        @GetMapping("hello")
+        public String hello() {
+            return "<ul>" +
+                    "<li>" + applicationContext.getBean(RequestScopeBean.class) + "</li>" +
+                    "<li>" + applicationContext.getBean(SessionScopeBean.class) + "</li>" +
+                    "<li>" + applicationContext.getBean(ApplicationScopeBean.class) + "</li>" +
+                    "</ul>";
+        }
+    }
+
+
+    @Scope("request")
+    @Component
+    static class RequestScopeBean {}
+
+    @Scope("session")
+    @Component
+    static class SessionScopeBean {}
+
+    @Scope("application")
+    @Component
+    static class ApplicationScopeBean {}
+}
+
+```
+
+### 单例Bean注入其他Scope的Bean失效分析
+:::tip  在单例Bean中注入多例Bean会导致多例Bean失效，因为对于单例bean来说依赖注入只发生一次。
+
+解决方案：
+- 代理方式：
+  - 在自动注入处加@Lazy注解;
+  - @Scope(proxyMode = ScopedProxyMode.xxx);
+- 对象工厂方式：注入ObjectFactory<目标多例Bean>；
+- IOC容器方式：注入ApplicationContext，通过getBean方法获取。
+
+以上方案的原理是通过加一个中间层推迟获取多例Bean，确保需要时才获取。
+
+:::
+ 

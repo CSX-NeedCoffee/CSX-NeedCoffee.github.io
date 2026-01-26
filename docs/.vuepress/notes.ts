@@ -11,11 +11,6 @@ const tools = defineNoteConfig({
   sidebar: ["", "git", "npm"],
 });
 
-// const java = defineNoteConfig({
-//   dir: "java",
-//   link: "/java",
-//   sidebar: ["", "juc/", "jvm/"],
-// });
 const jvm = defineNoteConfig({
   dir: "java/jvm",
   link: "/java/jvm",
@@ -25,7 +20,7 @@ const jvm = defineNoteConfig({
 const spring = defineNoteConfig({
   dir: "java/spring",
   link: "/java/spring",
-  sidebar: ["", "theory/"],
+  sidebar: ["", "ioc/", "aop/"],
 });
 
 
